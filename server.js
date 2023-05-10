@@ -24,7 +24,7 @@ db.on('connected', () => {
 const Admin = require('./Schemas/AdminLoginSchema');
 
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://jolly-smoke-00c45a603.3.azurestaticapps.net"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
 }));
