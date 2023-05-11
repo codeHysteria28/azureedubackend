@@ -30,8 +30,6 @@ app.use(cors({
 }));
 
 app.post('/adminReg', (req, res) => {
-    console.log(req.body);
-
     if(req.body !== {}){
         Admin.findOne({username: req.body.username}).then((doc, err) => {
             if(err) throw err;
