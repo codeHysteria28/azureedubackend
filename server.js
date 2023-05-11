@@ -73,7 +73,7 @@ app.post('/adminLogin', (req, res) => {
 
                     if(result){
                         const token = jwt.sign({username: admin.username}, process.env.JWT_SECRET, {expiresIn: "1h"});
-                        res.cookie("token", token, {httpOnly: true, path: "/"}).send("logged in");
+                        res.cookie("token", token, {httpOnly: true, path: "/", sameSite: 'none', secure: true}).send("logged in");
                     }else {
                         res.send("Incorrect password");
                     }
