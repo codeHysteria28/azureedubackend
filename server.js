@@ -12,6 +12,7 @@ require('dotenv').config();
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.set('trust proxy', 1);
 
 // DB connection check
 db.on('error', console.error.bind(console, "mongo conn err"));
