@@ -144,4 +144,8 @@ app.post('/logout', (req, res) => {
     });
 });
 
-app.listen(process.env.port || 1337, () => console.log("Running on port " + process.env.port || 1337));
+app.get('/', (req, res) => {   
+    console.log("Startup ping");
+});
+
+app.listen(process.env.port || 8080, () => console.log("Running on port " + process.env.port || 8080));
