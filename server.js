@@ -9,8 +9,8 @@ const db = require('./db');
 const moment = require('moment');
 require('dotenv').config();
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}, {limit: '50mb'}));
+app.use(bodyParser.json({limit: '50mb'}));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
@@ -23,6 +23,7 @@ db.on('connected', () => {
 
 // Schemas
 const Admin = require('./Schemas/AdminLoginSchema');
+const NewsArticles = require('./Schemas/NewsArticlesSchema');
 
 app.use(cors({
     origin: ["http://localhost:3000", "https://jolly-smoke-00c45a603.3.azurestaticapps.net"],
@@ -140,6 +141,46 @@ app.post('/logout', (req, res) => {
                 res.send(err);
             }
         });
+    });
+});
+
+app.post('/uploadNews', (req, res, err) => {
+    if(req.body !== {}){
+        const newArticle = new NewsArticles({
+            title: req.body.title,
+            content: req.body.content,
+            author: req.body.author,
+            topic: req.body.topic,
+            description: req.body.description,
+        });
+
+        console.log("article uploaded");
+        res.send('article uploaded');
+        newArticle.save();
+    }else {
+        res.send('error', err);
+    }
+});
+
+// get news articles
+app.get('/getNews', (req, res) => {
+    NewsArticles.find().limit(3).then((articles, err) => {
+        if(err) throw err;
+        
+        const scrapedArticles = articles.map((article) => {
+            return {
+                title: article.title,
+                author: article.author,
+                topic: article.topic,
+                description: article.description,
+            }
+        });
+        
+        if(scrapedArticles){
+            res.send(scrapedArticles);
+        }else {
+            res.send("no articles");
+        }
     });
 });
 
