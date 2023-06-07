@@ -154,7 +154,7 @@ app.post('/uploadNews', (req, res, err) => {
             description: req.body.description,
         });
 
-        console.log("article uploaded");
+        console.log(`New article ${req.body.title} uploaded by ${req.body.author} at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
         res.send('article uploaded');
         newArticle.save();
     }else {
@@ -181,6 +181,14 @@ app.get('/getNews', (req, res) => {
         }else {
             res.send("no articles");
         }
+    });
+});
+
+// get single article by title
+app.get('/getArticle/:title', (req, res) => {
+    NewsArticles.findOne({title: req.params.title}).then((article, err) => {
+        if(err) throw err;
+        res.send(article);
     });
 });
 
