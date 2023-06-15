@@ -164,8 +164,8 @@ app.post('/uploadNews', (req, res, err) => {
 });
 
 // get news articles
-app.get('/getNews', (req, res) => {
-    NewsArticles.find().then((articles, err) => {
+app.get('/getNews', async (req, res) => {
+    NewsArticles.find().sort({_id: 'desc'}).limit(3).then((articles, err) => {
         if(err) throw err;
         
         const scrapedArticles = articles.map((article) => {
@@ -175,6 +175,7 @@ app.get('/getNews', (req, res) => {
                 topic: article.topic,
                 description: article.description,
                 approved: article.approved,
+                createdAt: article.createdAt
             }
         });
         
