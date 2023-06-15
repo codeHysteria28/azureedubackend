@@ -152,6 +152,7 @@ app.post('/uploadNews', (req, res, err) => {
             author: req.body.author,
             topic: req.body.topic,
             description: req.body.description,
+            approved: req.body.approved
         });
 
         console.log(`New article ${req.body.title} uploaded by ${req.body.author} at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
@@ -164,7 +165,7 @@ app.post('/uploadNews', (req, res, err) => {
 
 // get news articles
 app.get('/getNews', (req, res) => {
-    NewsArticles.find().limit(3).then((articles, err) => {
+    NewsArticles.find().then((articles, err) => {
         if(err) throw err;
         
         const scrapedArticles = articles.map((article) => {
@@ -173,6 +174,28 @@ app.get('/getNews', (req, res) => {
                 author: article.author,
                 topic: article.topic,
                 description: article.description,
+                approved: article.approved,
+            }
+        });
+        
+        if(scrapedArticles){
+            res.send(scrapedArticles);
+        }else {
+            res.send("no articles");
+        }
+    });
+});
+
+app.get('/getNewsAdmin', (req, res) => {
+    NewsArticles.find().then((articles, err) => {
+        if(err) throw err;
+        
+        const scrapedArticles = articles.map((article) => {
+            return {
+                title: article.title,
+                author: article.author,
+                approved: article.approved,
+                createdAt: article.createdAt
             }
         });
         
@@ -189,6 +212,14 @@ app.get('/getArticle/:title', (req, res) => {
     NewsArticles.findOne({title: req.params.title}).then((article, err) => {
         if(err) throw err;
         res.send(article);
+    });
+});
+
+// approve article by title
+app.post('/approveArticle', (req, res) => {
+    NewsArticles.findOneAndUpdate({title: req.body.articleTitle}, {approved: true}).then((article, err) => {
+        if(err) throw err;
+        res.send('article with title ' + req.body.articleTitle + ' approved');
     });
 });
 
