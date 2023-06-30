@@ -27,7 +27,7 @@ const NewsArticles = require('./Schemas/NewsArticlesSchema');
 const UserCreator = require('./Schemas/UserCreatorSchema');
 
 app.use(cors({
-    origin: ["http://localhost:3000", "https://jolly-smoke-00c45a603.3.azurestaticapps.net"],
+    origin: ["http://localhost:3000", "https://jolly-smoke-00c45a603.3.azurestaticapps.net", "https://azureedu-ffbgbeb9h3ddgffx.z01.azurefd.net"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
 }));
@@ -228,6 +228,25 @@ app.post('/logout', (req, res) => {
                 if(admin){
                     res.clearCookie("token").send("logged out");
                     console.log(`Admin: ${decoded.username} logged out at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
+                }
+            }catch{
+                console.log(err);
+                res.send(err);
+            }
+        });
+    });
+});
+
+app.post('/userlogout', (req, res) => {
+    jwt.verify(req.cookies.token, process.env.JWT_SECRET,(err, decoded) => {
+        if(err) throw err;
+
+        UserCreator.findOneAndUpdate({email: decoded.email}, {loggedIn: false}).then((user,err )=> {
+            try{
+                if(err) throw err;
+                if(user){
+                    res.clearCookie("token", {path: "/"}).send("logged out");
+                    console.log(`User: ${decoded.email} logged out at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
                 }
             }catch{
                 console.log(err);
