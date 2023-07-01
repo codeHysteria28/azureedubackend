@@ -190,17 +190,33 @@ app.post('/usercreator', (req,res) => {
                 UserCreator.findOne({email: decoded.email}).then((user, err) => {
                     if(err) throw err;
 
-                    const data = {
-                        email: user.email
-                    }
+                    const eMail = user.email;
 
                     if(user){
                         UserCreator.findOneAndUpdate({email: decoded.email}, {loggedIn: true}).then((user,err )=> {
                             try{
                                 if(err) throw err;
                                 if(user){
-                                    res.send(data);
-                                    console.log(`User: ${decoded.email} is authenticated and logged in at ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
+                                    NewsArticles.find({author: eMail}).then((articles, err) => {
+                                        if(err) throw err;
+                                        
+                                        const scrapedArticles = articles.map((article) => {
+                                            return {
+                                                title: article.title,
+                                                topic: article.topic,
+                                                description: article.description,
+                                                approved: article.approved,
+                                                createdAt: article.createdAt
+                                            }
+                                        });
+                                        
+                                        if(scrapedArticles){
+                                            res.send({scrapedArticles, eMail});
+                                            console.log(`User: ${decoded.email} is authenticated and logged in at ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
+                                        }else {
+                                            res.send("no articles");
+                                        }
+                                    });
                                 }
                             }catch{
                                 console.log(err);
