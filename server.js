@@ -73,7 +73,6 @@ app.post('/signup', (req, res) => {
                 });
 
                 newUser.save();
-
                 res.send('registration of user-creator successful');
             }else {
                 res.send(err);
@@ -112,10 +111,10 @@ app.post('/adminLogin', (req, res) => {
 
 app.post('/signin', (req, res) => {
     if(req.body !== {}){
-        const email = req.body.email;
+        const username = req.body.username;
         const password = req.body.password;
 
-        UserCreator.findOne({email: email}).then((user, err) => {
+        UserCreator.findOne({username: username}).then((user, err) => {
             if(err) throw err;
 
             if(!user){
@@ -125,7 +124,7 @@ app.post('/signin', (req, res) => {
                     if(err) throw err;
 
                     if(result){
-                        const token = jwt.sign({email: user.email}, process.env.JWT_SECRET, {expiresIn: "1h"});
+                        const token = jwt.sign({username: user.username}, process.env.JWT_SECRET, {expiresIn: "1h"});
                         res.cookie("token", token, {httpOnly: true, path: "/", sameSite: 'none', secure: true}).send("logged in");
                     }else {
                         res.send("Incorrect password");
@@ -187,17 +186,19 @@ app.post('/usercreator', (req,res) => {
             if(err) throw err;
 
             if(decoded){
-                UserCreator.findOne({email: decoded.email}).then((user, err) => {
+                UserCreator.findOne({username: decoded.username}).then((user, err) => {
                     if(err) throw err;
 
-                    const eMail = user.email;
+                    const userName = {
+                        username: user.username
+                    }
 
                     if(user){
-                        UserCreator.findOneAndUpdate({email: decoded.email}, {loggedIn: true}).then((user,err )=> {
+                        UserCreator.findOneAndUpdate({username: decoded.username}, {loggedIn: true}).then((user,err )=> {
                             try{
                                 if(err) throw err;
                                 if(user){
-                                    NewsArticles.find({author: eMail}).then((articles, err) => {
+                                    NewsArticles.find({author: userName.username}).then((articles, err) => {
                                         if(err) throw err;
                                         
                                         const scrapedArticles = articles.map((article) => {
@@ -211,8 +212,8 @@ app.post('/usercreator', (req,res) => {
                                         });
                                         
                                         if(scrapedArticles){
-                                            res.send({scrapedArticles, eMail});
-                                            console.log(`User: ${decoded.email} is authenticated and logged in at ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
+                                            res.send({scrapedArticles, userName});
+                                            console.log(`User: ${decoded.username} is authenticated and logged in at ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
                                         }else {
                                             res.send("no articles");
                                         }
@@ -235,42 +236,42 @@ app.post('/usercreator', (req,res) => {
 });
 
 app.post('/logout', (req, res) => {
-    jwt.verify(req.cookies.token, process.env.JWT_SECRET,(err, decoded) => {
-        if(err) throw err;
-
-        Admin.findOneAndUpdate({username: decoded.username}, {loggedIn: false}).then((admin,err )=> {
-            try{
-                if(err) throw err;
-                if(admin){
-                    res.clearCookie("token").send("logged out");
-                    console.log(`Admin: ${decoded.username} logged out at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
+    if(req.body.logoutType === "user"){
+        jwt.verify(req.cookies.token, process.env.JWT_SECRET,(err, decoded) => {
+            if(err) throw err;
+    
+            UserCreator.findOneAndUpdate({username: decoded.username}, {loggedIn: false}).then((user,err )=> {
+                try{
+                    if(err) throw err;
+                    if(user){
+                        res.clearCookie("token").send("logged out");
+                        console.log(`User: ${decoded.username} logged out at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
+                    }
+                }catch{
+                    console.log(err);
+                    res.send(err);
                 }
-            }catch{
-                console.log(err);
-                res.send(err);
-            }
+            });
         });
-    });
-});
-
-app.post('/userlogout', (req, res) => {
-    jwt.verify(req.cookies.token, process.env.JWT_SECRET,(err, decoded) => {
-        if(err) throw err;
-
-        UserCreator.findOneAndUpdate({email: decoded.email}, {loggedIn: false}).then((user,err )=> {
-            try{
-                if(err) throw err;
-                if(user){
-                    res.clearCookie("token", {path: "/"}).send("logged out");
-                    console.log(`User: ${decoded.email} logged out at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
+    }else {
+        jwt.verify(req.cookies.token, process.env.JWT_SECRET,(err, decoded) => {
+            if(err) throw err;
+    
+            Admin.findOneAndUpdate({username: decoded.username}, {loggedIn: false}).then((admin,err )=> {
+                try{
+                    if(err) throw err;
+                    if(admin){
+                        res.clearCookie("token").send("logged out");
+                        console.log(`Admin: ${decoded.username} logged out at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
+                    }
+                }catch{
+                    console.log(err);
+                    res.send(err);
                 }
-            }catch{
-                console.log(err);
-                res.send(err);
-            }
+            });
         });
-    });
-});
+    }
+}); 
 
 app.post('/uploadNews', (req, res, err) => {
     if(req.body !== {}){
