@@ -317,7 +317,7 @@ app.get('/getNews', async (req, res) => {
 });
 
 app.get('/getNewsAdmin', (req, res) => {
-    NewsArticles.find().then((articles, err) => {
+    NewsArticles.find().sort({_id: 'desc'}).then((articles, err) => {
         if(err) throw err;
         
         const scrapedArticles = articles.map((article) => {
@@ -325,6 +325,8 @@ app.get('/getNewsAdmin', (req, res) => {
                 title: article.title,
                 author: article.author,
                 approved: article.approved,
+                topic: article.topic,
+                description: article.description,
                 createdAt: article.createdAt
             }
         });
