@@ -27,7 +27,7 @@ const NewsArticles = require('./Schemas/NewsArticlesSchema');
 const UserCreator = require('./Schemas/UserCreatorSchema');
 
 app.use(cors({
-    origin: ["http://localhost:3000", "https://jolly-smoke-00c45a603.3.azurestaticapps.net", "https://azureedu-ffbgbeb9h3ddgffx.z01.azurefd.net"],
+    origin: ["http://localhost:3000", "https://jolly-smoke-00c45a603.3.azurestaticapps.net", "https://azureedu-ffbgbeb9h3ddgffx.z01.azurefd.net", "https://azure-edu.eu"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
 }));
