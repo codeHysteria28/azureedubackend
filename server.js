@@ -304,7 +304,9 @@ app.get('/getNews', async (req, res) => {
                 topic: article.topic,
                 description: article.description,
                 approved: article.approved,
-                createdAt: article.createdAt
+                createdAt: article.createdAt,
+                likes: article.likes,
+                dislikes: article.dislikes
             }
         });
         
@@ -327,7 +329,9 @@ app.get('/getNewsAdmin', (req, res) => {
                 approved: article.approved,
                 topic: article.topic,
                 description: article.description,
-                createdAt: article.createdAt
+                createdAt: article.createdAt,
+                likes: article.likes,
+                dislikes: article.dislikes
             }
         });
         
@@ -352,6 +356,41 @@ app.post('/approveArticle', (req, res) => {
     NewsArticles.findOneAndUpdate({title: req.body.articleTitle}, {approved: true}).then((article, err) => {
         if(err) throw err;
         res.send('article with title ' + req.body.articleTitle + ' approved');
+    });
+});
+
+// likeDislikeArticle by title
+app.post('/likeDislikeArticle/:title', (req, res) => {
+    const type = req.body.type;
+    const title = req.params.title;
+
+    if(type === "like"){
+        NewsArticles.findOneAndUpdate({title: title}, {$inc: {likes: 1}}).then((article, err) => {
+            if(err) throw err;
+            res.send({
+                count: article.likes
+            });
+        });
+    }else if(type === "unLike"){
+        NewsArticles.findOneAndUpdate({title: title}, {$inc: {likes: -1}}).then((article, err) => {
+            if(err) throw err;
+            res.send({
+                count: article.likes
+            });
+        });
+    }else {
+        res.send('error');
+    }
+});
+
+// get likes and dislikes by title
+app.get('/getLikesDislikes/:title', (req, res) => {
+    NewsArticles.findOne({title: req.params.title}).then((article, err) => {
+        if(err) throw err;
+        res.send({
+            likes: article.likes,
+            dislikes: article.dislikes
+        });
     });
 });
 

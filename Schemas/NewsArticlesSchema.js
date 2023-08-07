@@ -7,7 +7,8 @@ const NewsArticlesSchema = new Schema({
     author: {type: String, required: true},
     topic: {type: String, required: true},
     description: {type: String, required: true},
-    approved: {type: Boolean, required: true}
+    approved: {type: Boolean, required: true},
+    likes: {type: Number, required: false},
 },{ timestamps: true, collection: 'NewsArticles' });
 
 module.exports = mongoose.model('NewsArticles', NewsArticlesSchema);
