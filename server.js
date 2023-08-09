@@ -305,8 +305,7 @@ app.get('/getNews', async (req, res) => {
                 description: article.description,
                 approved: article.approved,
                 createdAt: article.createdAt,
-                likes: article.likes,
-                dislikes: article.dislikes
+                content: article.content
             }
         });
         
@@ -330,8 +329,7 @@ app.get('/getNewsAdmin', (req, res) => {
                 topic: article.topic,
                 description: article.description,
                 createdAt: article.createdAt,
-                likes: article.likes,
-                dislikes: article.dislikes
+                content: article.content
             }
         });
         
