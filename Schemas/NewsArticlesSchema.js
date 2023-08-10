@@ -9,6 +9,7 @@ const NewsArticlesSchema = new Schema({
     description: {type: String, required: true},
     approved: {type: Boolean, required: true},
     likes: {type: Number, required: false},
+    textToSpeechAudioUrl: {type: String, required: true},
 },{ timestamps: true, collection: 'NewsArticles' });
 
 module.exports = mongoose.model('NewsArticles', NewsArticlesSchema);

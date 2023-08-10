@@ -7,6 +7,10 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require("cookie-parser");
 const db = require('./db');
 const moment = require('moment');
+const { AudioConfig, SpeechSynthesizer, SpeechConfig } = require('microsoft-cognitiveservices-speech-sdk');
+const { convert } = require('html-to-text');
+const { BlobServiceClient } = require('@azure/storage-blob');
+const { PassThrough } = require('stream');
 require('dotenv').config();
 
 app.use(bodyParser.urlencoded({extended: true}, {limit: '50mb'}));
@@ -20,6 +24,10 @@ db.on('error', console.error.bind(console, "mongo conn err"));
 db.on('connected', () => {
    console.log('connected to mongodb');
 });
+
+// create blob service client
+const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
+const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME;
 
 // Schemas
 const Admin = require('./Schemas/AdminLoginSchema');
@@ -273,16 +281,59 @@ app.post('/logout', (req, res) => {
     }
 }); 
 
-app.post('/uploadNews', (req, res, err) => {
+app.post('/uploadNews', async (req, res, err) => {
     if(req.body !== {}){
+        const blobName = `${req.body.title}.mp3`;
+
+        // converting html to plain text
+        const text = convert(req.body.content);
+
+        // removing base64 image data from text
+        const finalText = text.replace(/\[data:.*\].*/g, "");
+
+        const containerClient = blobServiceClient.getContainerClient(containerName);
+        const blobClient = containerClient.getBlockBlobClient(blobName);
+
+        // speech configuration
+        const speechConfig = SpeechConfig.fromSubscription(process.env.SPEECH_KEY, process.env.SPEECH_REGION);
+        speechConfig.speechSynthesisVoiceName = "en-US-JennyNeural"; 
+        speechConfig.speechSynthesisLanguage = "en-US"; 
+
+        // audio configuration
+        const audioConfig = AudioConfig.fromAudioFileOutput(blobName);
+
+        // synthesizer configutation
+        const synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
+
         const newArticle = new NewsArticles({
             title: req.body.title,
             content: req.body.content,
             author: req.body.author,
             topic: req.body.topic,
             description: req.body.description,
-            approved: req.body.approved
+            approved: req.body.approved,
+            textToSpeechAudioUrl: `https://speechtotextaudio.blob.core.windows.net/${containerName}/${blobName}`,
         });
+
+        // synthesizing text to speech/audio file and uploading to azure blob storage
+        synthesizer.speakTextAsync(
+            finalText,
+            result => {
+                const { audioData } = result;
+
+                // convert array buffer to stream
+                const bufferStream = new PassThrough();
+                bufferStream.end(Buffer.from(audioData));
+
+                // upload stream to azure blob storage
+                blobClient.uploadStream(bufferStream);
+                console.log('Audio File uploaded to Azure Blob storage');
+            },
+            error => {
+                console.log(error);
+                synthesizer.close();
+            }
+        );
 
         console.log(`New article ${req.body.title} uploaded by ${req.body.author} at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
         res.send('article uploaded');
@@ -390,6 +441,11 @@ app.get('/getLikesDislikes/:title', (req, res) => {
             dislikes: article.dislikes
         });
     });
+});
+
+// ping server
+app.get('/ping', (req, res) => {
+    res.send('pong');
 });
 
 app.listen(process.env.port || 80, () => console.log("Running on port " + process.env.port || 80));
