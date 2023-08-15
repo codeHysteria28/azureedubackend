@@ -374,6 +374,7 @@ app.get('/getNewsAdmin', (req, res) => {
         
         const scrapedArticles = articles.map((article) => {
             return {
+                id: article._id,
                 title: article.title,
                 author: article.author,
                 approved: article.approved,
@@ -407,6 +408,17 @@ app.post('/approveArticle', (req, res) => {
         res.send('article with title ' + req.body.articleTitle + ' approved');
     });
 });
+
+// deleting article by title
+app.post('/deleteArticle', (req, res) => {
+    NewsArticles.findOneAndDelete({_id: req.body.articleID}).then((article, err) => {
+        if(err) throw err;
+        console.log(`Article with title ${article.title} deleted at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
+        res.send('article deleted');
+    });
+});
+
+// editing article by title
 
 // likeDislikeArticle by title
 app.post('/likeDislikeArticle/:title', (req, res) => {
