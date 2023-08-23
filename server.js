@@ -345,26 +345,9 @@ app.post('/uploadNews', async (req, res, err) => {
 
 // get news articles
 app.get('/getNews', async (req, res) => {
-    NewsArticles.find().sort({_id: 'desc'}).limit(3).then((articles, err) => {
+    NewsArticles.find({ approved: true }).sort({_id: -1}).limit(3).then((articles, err) => {
         if(err) throw err;
-        
-        const scrapedArticles = articles.map((article) => {
-            return {
-                title: article.title,
-                author: article.author,
-                topic: article.topic,
-                description: article.description,
-                approved: article.approved,
-                createdAt: article.createdAt,
-                content: article.content
-            }
-        });
-        
-        if(scrapedArticles){
-            res.send(scrapedArticles);
-        }else {
-            res.send("no articles");
-        }
+        res.send(articles);
     });
 });
 
