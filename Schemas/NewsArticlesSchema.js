@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const NewsArticlesSchema = new Schema({
     title: {type: String, required: true},
+    slug: {type: String, required: true},
     content: {type: String, required: true},
     author: {type: String, required: true},
     topic: {type: String, required: true},

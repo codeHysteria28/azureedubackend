@@ -36,4 +36,9 @@ app.get('/ping', (req, res) => {
     res.send('pong');
 });
 
+// handle default route
+app.get('*', (req, res) => {
+    res.send('404');
+});
+
 app.listen(process.env.port || 80, () => console.log("Running on port " + process.env.port || 80));

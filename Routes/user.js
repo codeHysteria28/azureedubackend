@@ -95,13 +95,28 @@ userRouter.post('/uploadNews', async (req, res, err) => {
         // synthesizer configutation
         const synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
 
+        // creating slug from title
+        const title = req.body.title;
+        const slug = title.toLowerCase().trim().split(' ').join('-');
+
+        // assigning approved status
+        let approvedStatus = false;
+
+        // change approved status if the user is an admin
+        if(req.body.isAdmin){
+            approvedStatus = true;
+        }else {
+            approvedStatus = false;
+        }
+
         const newArticle = new NewsArticles({
             title: req.body.title,
+            slug: slug,
             content: req.body.content,
             author: req.body.author,
             topic: req.body.topic,
             description: req.body.description,
-            approved: req.body.approved,
+            approved: approvedStatus,
             textToSpeechAudioUrl: `https://speechtotextaudio.blob.core.windows.net/${containerName}/${blobName}`,
         });
 
@@ -120,7 +135,7 @@ userRouter.post('/uploadNews', async (req, res, err) => {
                 console.log('Audio File uploaded to Azure Blob storage');
             },
             error => {
-                console.log(error);
+                console.error(error);
                 synthesizer.close();
             }
         );
@@ -130,6 +145,7 @@ userRouter.post('/uploadNews', async (req, res, err) => {
         newArticle.save();
     }else {
         res.send('error', err);
+        console.error(err);
     }
 });
 
@@ -142,9 +158,10 @@ userRouter.get('/getNews', async (req, res) => {
 });
 
 // get single article by title
-userRouter.get('/getArticle/:title', (req, res) => {
-    NewsArticles.findOne({title: req.params.title}).then((article, err) => {
+userRouter.get('/getArticle/:slug', (req, res) => {
+    NewsArticles.findOne({slug: req.params.slug}).then((article, err) => {
         if(err) throw err;
+        console.log(req.params.slug);
         res.send(article);
     });
 });
@@ -173,6 +190,7 @@ userRouter.post('/likeDislikeArticle/:title', (req, res) => {
         });
     }else {
         res.send('error');
+        console.error(err);
     }
 });
 

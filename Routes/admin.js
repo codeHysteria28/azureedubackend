@@ -43,6 +43,7 @@ adminRouter.post('/adminReg', (req, res) => {
                 const newAdmin = new Admin({
                     username: req.body.username,
                     password: req.body.password,
+                    isAdmin: true,
                     fullName: req.body.fullName,
                     email: req.body.email,
                     repPassword: req.body.repPassword
@@ -102,27 +103,9 @@ adminRouter.post('/admin', (req,res) => {
 });
 
 adminRouter.get('/getNewsAdmin', (req, res) => {
-    NewsArticles.find().sort({_id: 'desc'}).then((articles, err) => {
+    NewsArticles.find({ approved: true }).sort({_id: 'desc'}).then((articles, err) => {
         if(err) throw err;
-
-        const scrapedArticles = articles.map((article) => {
-            return {
-                id: article._id,
-                title: article.title,
-                author: article.author,
-                approved: article.approved,
-                topic: article.topic,
-                description: article.description,
-                createdAt: article.createdAt,
-                content: article.content
-            }
-        });
-
-        if(scrapedArticles){
-            res.send(scrapedArticles);
-        }else {
-            res.send("no articles");
-        }
+        res.send(articles);
     });
 });
 
