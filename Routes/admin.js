@@ -109,6 +109,13 @@ adminRouter.get('/getNewsAdmin', (req, res) => {
     });
 });
 
+adminRouter.get('/getNewsAdminAll', (req, res) => {
+    NewsArticles.find().sort({_id: 'desc'}).then((articles, err) => {
+        if(err) throw err;
+        res.send(articles);
+    });
+});
+
 // approve article by title
 adminRouter.post('/approveArticle', (req, res) => {
     NewsArticles.findOneAndUpdate({title: req.body.articleTitle}, {approved: true}).then((article, err) => {
@@ -121,7 +128,7 @@ adminRouter.post('/approveArticle', (req, res) => {
 adminRouter.post('/deleteArticle', (req, res) => {
     NewsArticles.findOneAndDelete({_id: req.body.articleID}).then((article, err) => {
         if(err) throw err;
-        console.log(`Article with title ${article.title} deleted at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
+        console.log(`Article deleted at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
         res.send('article deleted');
     });
 });

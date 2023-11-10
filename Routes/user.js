@@ -7,6 +7,7 @@ const { PassThrough } = require('stream');
 require('dotenv').config();
 const UserCreator = require('../Schemas/UserCreatorSchema');
 const NewsArticles = require('../Schemas/NewsArticlesSchema');
+const moment = require("moment/moment");
 
 // create blob service client
 const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
