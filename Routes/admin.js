@@ -7,6 +7,7 @@ require('dotenv').config();
 
 const Admin = require('../Schemas/AdminLoginSchema');
 const NewsArticles = require('../Schemas/NewsArticlesSchema');
+const ComingUp = require('../Schemas/ComingUpSchema');
 
 adminRouter.post('/adminLogin', (req, res) => {
     if(req.body !== {}){
@@ -130,6 +131,26 @@ adminRouter.post('/deleteArticle', (req, res) => {
         if(err) throw err;
         console.log(`Article deleted at ${moment().format('MMMM Do YYYY, h:mm:ss a')}`);
         res.send('article deleted');
+    });
+});
+
+// uploading coming up event
+adminRouter.post('/comingUpUpload', (req, res) => {
+    const newComingUp = new ComingUp({
+        title: req.body.title,
+        date: req.body.date,
+        description: req.body.description
+    });
+
+    newComingUp.save();
+    res.send('coming up event saved');
+});
+
+// get coming up events
+adminRouter.get('/getComingUp', (req, res) => {
+    ComingUp.find({ visible: true }).sort({date: 'asc'}).then((events, err) => {
+        if(err) throw err;
+        res.send(events);
     });
 });
 
