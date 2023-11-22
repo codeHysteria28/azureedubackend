@@ -7,6 +7,8 @@ const db = require('./db');
 const adminRouter = require('./Routes/admin.js');
 const authRouter = require('./Routes/auth.js');
 const userRouter = require('./Routes/user.js');
+const cron = require('node-cron');
+const moment = require('moment');
 require('dotenv').config();
 
 app.use(bodyParser.urlencoded({extended: true}, {limit: '50mb'}));
@@ -18,6 +20,9 @@ app.use(cors({
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
 }));
+
+// Schemas
+const ComingUp = require('./Schemas/ComingUpSchema');
 
 // DB connection check
 db.on('error', console.error.bind(console, "mongo conn err"));
@@ -39,6 +44,26 @@ app.get('/ping', (req, res) => {
 // handle default route
 app.get('*', (req, res) => {
     res.send('404');
+});
+
+// Cron scheduled job to soft delete expired coming up events
+cron.schedule('0 1 * * *', () => {
+    console.log("Running cron job...");
+    ComingUp.find({visible: true}).then((docs, err) => {
+        if(err) throw err;
+
+        if(docs){
+            docs.forEach((doc) => {
+                if(moment(doc.date).isSame(moment().format('YYYY-MM-DD'))){
+                    doc.visible = false;
+                    doc.save();
+                    console.log("Soft deleted " + doc.title);
+                }else {
+                    console.log("No events to delete...");
+                }
+            });
+        }
+    });
 });
 
 app.listen(process.env.port || 80, () => console.log("Running on port " + process.env.port || 80));
