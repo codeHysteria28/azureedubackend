@@ -73,7 +73,7 @@ userRouter.post('/usercreator', (req,res) => {
 });
 
 userRouter.post('/uploadNews', async (req, res, err) => {
-    if(req.body !== {}){
+    if(Object.keys(req.body).length > 0){
         const blobName = `${req.body.title}.mp3`;
 
         // converting html to plain text

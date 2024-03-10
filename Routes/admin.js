@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const moment = require("moment/moment");
 const adminRouter = express.Router();
+const axios = require("axios");
 require('dotenv').config();
 
 const Admin = require('../Schemas/AdminLoginSchema');
@@ -10,7 +11,7 @@ const NewsArticles = require('../Schemas/NewsArticlesSchema');
 const ComingUp = require('../Schemas/ComingUpSchema');
 
 adminRouter.post('/adminLogin', (req, res) => {
-    if(req.body !== {}){
+    if(Object.keys(req.body).length > 0){
         const username = req.body.username;
         const password = req.body.password;
 
@@ -36,7 +37,7 @@ adminRouter.post('/adminLogin', (req, res) => {
 });
 
 adminRouter.post('/adminReg', (req, res) => {
-    if(req.body !== {}){
+    if(Object.keys(req.body).length > 0){
         Admin.findOne({username: req.body.username}).then((doc, err) => {
             if(err) throw err;
             if(doc) res.send('user already exists');
@@ -151,6 +152,21 @@ adminRouter.get('/getComingUp', (req, res) => {
     ComingUp.find({ visible: true }).sort({date: 'asc'}).then((events, err) => {
         if(err) throw err;
         res.send(events);
+    });
+});
+
+adminRouter.post('/aichat', (req, res) => {  
+    axios({
+        method: 'post',
+        url: `${process.env.FN_URL}`,
+        data: req.body, // or the data you want to send
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => {
+        res.send(response.data);
+    })
+    .catch(error => {
+        console.error(error);
     });
 });
 
