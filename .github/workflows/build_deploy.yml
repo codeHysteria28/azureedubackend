@@ -51,8 +51,8 @@ jobs:
     - name: upload build artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.AZURE_WEBAPP_NAME }}
-        path: release.zip
+        name: release
+        path: .
         
   deploy:
     runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
     - name: download build artifact
       uses: actions/download-artifact@v4
       with:
-        name: ${{ env.AZURE_WEB_APP }}
+        name: release
         path: .
 
     - name: Unzip artifact for deployment
