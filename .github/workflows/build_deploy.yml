@@ -54,12 +54,12 @@ jobs:
       run: npm install
 
     - name: zip build artifact
-      run: zip -r release.zip .
+      run: zip release.zip ./* -r
       
     - name: upload build artifact
       uses: actions/upload-artifact@v3
       with:
-        name: release
+        name: node-app
         path: release.zip
         
   deploy:
@@ -73,11 +73,10 @@ jobs:
     - name: download build artifact
       uses: actions/download-artifact@v4
       with:
-        name: release
-        path: .
+        name: node-app
 
     - name: Unzip artifact for deployment
-      run: unzip release.zip -d .
+      run: unzip release.zip
 
     - name: deploy to azure app service
       id: deploy-to-webapp
@@ -87,6 +86,10 @@ jobs:
         slot-name: production
         publish_profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: remove zipped file
+      run: rm release.zip
+        
         
       
   
