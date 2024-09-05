@@ -4,6 +4,7 @@ on: push
 env:
   AZURE_WEBAPP_NAME: 'azureedube1'
   NODE_VERSION: '18.x'
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
 
 jobs:
 
@@ -43,7 +44,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.AZURE_WEBAPP_NAME }}
-        path: release.zip
+        path: ./release.zip
         
   deploy:
     runs-on: ubuntu-latest
@@ -68,7 +69,8 @@ jobs:
         name: ${{ env.AZURE_WEB_APP }}
         slot-name: production
         publish_profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE }}
-        package: .
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        
       
   
       
