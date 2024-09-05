@@ -6,8 +6,31 @@ env:
   NODE_VERSION: '18.x'
 
 jobs:
-  build:
+
+  codeql:
+    name: Analyze code with CodeQL
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+  
+    steps:
+    - name: checkout repo
+      uses: actions/checkout@v4
+    - name: codeql init
+      uses: github/codeql-action/init@v2
+      with:
+        languages: javacript
+    - name: autobuild
+      uses: github/codeql-action/autobuild@v2
+    - name: perform codeql analysis
+      uses: github/codeql-action/analyze@v2
+    
+  build:
+    name: Build an app
+    runs-on: ubuntu-latest
+    needs: codeql
     steps:
     - name: checkout repo
       uses: actions/checkout@v4
@@ -21,6 +44,7 @@ jobs:
       with:
         name: ${{ env.AZURE_WEBAPP_NAME }}
         path: release.zip
+        
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -44,6 +68,7 @@ jobs:
         name: ${{ env.AZURE_WEB_APP }}
         slot-name: production
         publish_profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE }}
+        package: .
       
   
       
