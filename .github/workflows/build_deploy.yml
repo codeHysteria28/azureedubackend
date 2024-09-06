@@ -84,7 +84,7 @@ jobs:
       with:
         name: ${{ env.AZURE_WEB_APP }}
         slot-name: production
-        publish_profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE }}
+        publish-profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     - name: remove zipped file
